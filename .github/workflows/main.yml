@@ -25,8 +25,8 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Install MySQL client
-        run: sudo apt-get update && sudo apt-get install -y mysql-client
+      - name: Setup Docker check tools
+        run: sudo apt-get update
 
       - name: Mask DB password
         run: echo "::add-mask::$DB_PASS"
@@ -48,26 +48,27 @@ jobs:
       - name: Check Web Container
         run: curl -s http://127.0.0.1:8080 | grep -q 'My First and Lastname'
 
-      - name: Wait for MariaDB (fixed)
+      - name: Wait for MariaDB
         run: |
           echo "Waiting for MariaDB..."
-      
+
           for i in {1..30}; do
-            if docker exec mariadb-container mysql -uroot -p$DB_PASS -e "SELECT 1;" 2>/dev/null; then
+            if docker exec mariadb-container mysql -uroot -p$DB_PASS -e "select 1;" 2>/dev/null; then
               echo "MariaDB is ready"
               exit 0
             fi
-      
+
             echo "Attempt $i..."
             sleep 2
           done
-      
+
           echo "Timeout waiting for MariaDB"
           docker logs mariadb-container
           exit 1
 
       - name: Check Database Container
-        run: mysql -h 127.0.0.1 -u root -p$DB_PASS -e "select version();"
+        run: |
+          docker exec mariadb-container mysql -uroot -p$DB_PASS -e "select version();"
 
       - name: Stop Containers
         run: docker stop $(docker ps -q)
