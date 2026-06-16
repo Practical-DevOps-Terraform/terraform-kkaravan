@@ -32,7 +32,7 @@ resource "docker_container" "nginx" {
 
   provisioner "local-exec" {
     command = <<EOT
-echo "<h1>My First and Lastname: Your First Lastname</h1>" > index.html
+echo "<h1>My First and Lastname: Kostia Karavan</h1>" > index.html
 docker cp index.html ${self.name}:/usr/share/nginx/html/index.html
 EOT
   }
