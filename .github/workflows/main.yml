@@ -51,7 +51,7 @@ jobs:
       - name: Wait for MariaDB container
         run: |
           i=0
-          until mysql -h 127.0.0.1 -u root -p$DB_PASS -e "select 1;" 2>/dev/null
+          until docker exec mariadb-container mysqladmin ping -u root -p$DB_PASS --silent
           do
             if [ $i -eq 20 ]; then
               echo "Timeout waiting for MariaDB"
