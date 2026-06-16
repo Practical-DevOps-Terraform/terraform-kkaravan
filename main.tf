@@ -7,9 +7,7 @@ terraform {
   }
 }
 
-provider "docker" {
-  host = "unix:///var/run/docker.sock"
-}
+provider "docker" {}
 
 variable "db_root_password" {
   type = string
@@ -32,9 +30,11 @@ resource "docker_container" "nginx" {
     external = 8080
   }
 
-  volumes {
-    host_path      = "${path.module}/index.html"
-    container_path = "/usr/share/nginx/html/index.html"
+  provisioner "local-exec" {
+    command = <<EOT
+echo "<h1>My First and Lastname: Kostia Karavan</h1>" > index.html
+docker cp index.html ${self.name}:/usr/share/nginx/html/index.html
+EOT
   }
 }
 
@@ -48,13 +48,6 @@ resource "docker_container" "mariadb" {
 
   ports {
     internal = 3306
-    external = 3306
-  }
-
-  healthcheck {
-    test     = ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${var.db_root_password}"]
-    interval = "5s"
-    timeout  = "3s"
-    retries  = 20
+    external = 3307
   }
 }
